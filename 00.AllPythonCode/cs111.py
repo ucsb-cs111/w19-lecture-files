@@ -155,7 +155,7 @@ def LUfactor(A, pivoting = True):
     """Factor a square matrix with partial pivoting, A[p,:] == L @ U
     Parameters: 
       A: the matrix.
-      pivoting: whether or not to do partial pivoting
+      pivoting: whether or not to do partial pivoting, default True
     Outputs (in order):
       L: the lower triangular factor, same dimensions as A, with ones on the diagonal
       U: the upper triangular factor, same dimensions as A
@@ -177,7 +177,7 @@ def LUfactor(A, pivoting = True):
         
         # Choose the pivot row and swap it into place
         if pivoting:
-            piv_row = piv_col + np.argmax(LU[piv_col:, piv_col]) 
+            piv_row = piv_col + np.argmax(np.abs(LU[piv_col:, piv_col]))
             assert LU[piv_row, piv_col] != 0., "can't find nonzero pivot, matrix is singular"
             LU[[piv_col, piv_row], :]  = LU[[piv_row, piv_col], :]
             p[[piv_col, piv_row]]      = p[[piv_row, piv_col]]
@@ -208,9 +208,12 @@ def Lsolve(L, b):
     
     # Check the input
     m, n = L.shape
-    assert m == n, "matrix L must be square"
+    assert m == n, "matrix must be square"
     assert np.all(np.tril(L) == L), "matrix L must be lower triangular"
     assert np.all(np.diag(L) == 1), "matrix L must have ones on the diagonal"
+    bn, = b.shape
+    assert bn == n, "rhs vector must be same size as L"
+
     
     # Make a copy of b that we will transform into the solution
     y = b.astype(np.float64).copy()
@@ -292,5 +295,35 @@ def LUfactor(A, pivoting = True):
     L = LU - U + np.eye(n)
     
     return (L, U, p)
+
+########################################################################
+def LUsolve(A, b):
+    """Solve a linear system Ax = b for x by LU factorization with partial pivoting.
+    Parameters: 
+      A: the matrix.
+      b: the right-hand side
+    Outputs (in order):
+      x: the computed solution
+      rel_res: relative residual norm,
+        norm(b - Ax) / norm(b)
+    """
+    
+    # Check the input
+    m, n = A.shape
+    assert m == n, "matrix must be square"
+    bn, = b.shape
+    assert bn == n, "rhs vector must be same size as matrix"
+    
+    # LU factorization
+    L, U, p = LUfactor(A)
+    
+    # Forward and back substitution
+    y = Lsolve(L,b[p])
+    x = Usolve(U,y)
+    
+    # Residual norm
+    rel_res = npla.norm(b - A@x) / npla.norm(b)
+    
+    return (A, rel_res)
 
 ########################################################################
