@@ -324,6 +324,6 @@ def LUsolve(A, b):
     # Residual norm
     rel_res = npla.norm(b - A@x) / npla.norm(b)
     
-    return (A, rel_res)
+    return (x, rel_res)
 
 ########################################################################
