@@ -1,0 +1,9 @@
+      name: 'SNAP/web-Google'
+     title: 'Web graph from Google'
+         A: [916428×916428 double]
+        id: 2301
+      date: '2002'
+    author: 'Google'
+        ed: 'J. Leskovec'
+      kind: 'directed graph'
+     notes: [37×79 char]
